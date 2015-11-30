@@ -11,9 +11,11 @@ class Graphe{
 private:
 	int nbSommets;
 	vector< vector<bool> > sommets; 
+	vector<int> clique;
+	vector<int> sommetsParcourus;
 public:
 	/**
-	*Construit le graphe à partir du fichier
+	*Construit le graphe à partir
 	*du nom du fichier passé en paramètre
 	**/
 	Graphe(string fileName){
@@ -40,7 +42,7 @@ public:
 		else{
 			cout<<"échec ouverture"<<endl;
 		}
-		display();
+		//display();
 	}
 
 	/**
@@ -78,6 +80,45 @@ public:
 		}
 	}
 
+	bool sommetDejaParcouru(int sommet){
+		return find(sommetsParcourus.begin(),sommetsParcourus.end(),sommet)!=sommetsParcourus.end();
+	}
+
+
+	int nbSommetsAdjacents(int sommet){
+		int somme=0;
+		auto s1=sommets.begin()+sommet-1;
+		for(auto s2=(*s1).begin();s2<(*s1).end();s2++){
+			if((*s2)){
+				somme++;
+			}
+		}
+		return somme;
+	}
+
+
+	void test(){
+		int sommetMax=sommetMaxAdjacences();
+		cout<<"sommet max: "<<sommetMax<<endl;
+		sommetsParcourus.push_back(sommetMax);
+		sommetMax=sommetMaxAdjacences();
+		cout<<"sommet max: "<<sommetMax<<endl;
+	}
+
+	int sommetMaxAdjacences(){
+		int sommetMax=0;
+		int adjacents;
+		int max=0;
+		for(int i=1;i<=nbSommets;i++){
+			adjacents=nbSommetsAdjacents(i);
+			if(adjacents>max&&!sommetDejaParcouru(i)){
+				max=adjacents;
+				sommetMax=i;
+			}
+		}
+		return sommetMax;
+	}
+
 	/**
 	*Affiche le graphe
 	**/
@@ -88,6 +129,42 @@ public:
 			}
 			cout<<endl;
 		}
+	}
+
+	bool agranditClique(int s1){
+		int s2;
+		for(int i=0;i<clique.size();i++){
+			s2=clique.at(i);
+			if(!sommets.at(s1-1).at(s2-1)){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	*on sélectionne le sommet qui a le plus de sommets adjacents
+	*si ce sommet est adjacent à tous les sommets de la clique actuelle on l'y ajoute
+	**/
+	vector<int>& calculerCliqueMaximale(){
+		bool termine=false;
+		int sommetMax;
+		do{
+			sommetMax=sommetMaxAdjacences();
+			if(sommets.size()==sommetsParcourus.size()){
+				termine=true;
+			}
+
+			else if(agranditClique(sommetMax)){
+				cout<<"on agrandit la clique avec : "<<sommetMax<<endl;
+				clique.push_back(sommetMax);
+			}
+			sommetsParcourus.push_back(sommetMax);
+
+		}
+		while(termine==false);
+
+		return clique;
 	}
 
 };
